@@ -4,8 +4,14 @@ DROP PROCEDURE IF EXISTS ListarTareas;
 
 DELIMITER |
 
-CREATE  PROCEDURE ListarTareas()
+CREATE  PROCEDURE ListarTareas(PROCEDURE `ListarTareas`(
+	IN limitNumber INT,
+    IN pageNumber INT
+)
 BEGIN
+	DECLARE offsetNumber INT;
+    SET offsetNumber = (pageNumber - 1) * limitNumber;
+    
 	select t0.nroTicket, t1.nombre sala, t3.nombre especialidad, t2.nombre actividad, t4.nombre equipo,
 	DATE_FORMAT(t0.fechaHoraInicio, "%Y/%m/%d %T") fechaHoraInicio, 
 	DATE_FORMAT(t0.fechaHoraFin, "%Y/%m/%d %T") fechaHoraFin, 
@@ -24,7 +30,8 @@ BEGIN
 	left join documento t8 on t8.nroTicket = t0.nroTicket
 	group by nroTicket, sala, especialidad, actividad, equipo, fechaHoraInicio, fechaHoraFin,
 	supervisor, descripcionTrabajo, cliente, proveedor, personal
-	order by t0.fechaHoraCreacion desc;
+	order by t0.fechaHoraCreacion desc
+	LIMIT limitNumber OFFSET offsetNumber;
 END
 
 DELIMITER ;
