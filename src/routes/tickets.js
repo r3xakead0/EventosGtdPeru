@@ -106,7 +106,7 @@ router.get('/:page?', isLoggedIn, async (req, res) => {
         tickets: tickets,
         pagination: {
             page: page,
-            limit: limit,
+            limit: pageSize,
             totalRows: totalRows,
             pageCount: pageCount
         }
