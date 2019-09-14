@@ -68,7 +68,7 @@ router.post('/add', isLoggedIn, async (req, res) => {
                 nombre: path.basename(targetPath),
                 nroTicket: form.nroTicket
             };
-    
+
             await pool.query('INSERT INTO documento set ?', [newDocument]);
         } else {
             await fs.unlink(fileTempPath);
@@ -135,32 +135,37 @@ router.get('/delete/:id', isLoggedIn, async (req, res) => {
 router.get('/edit/:id', isLoggedIn, async (req, res) => {
     const { id } = req.params;
 
-    Promise.all([
-        await pool.query('SELECT * FROM equipo WHERE activo = ?', true),
-        await pool.query('SELECT * FROM sala WHERE activo = ?', true),
-        await pool.query('SELECT * FROM supervisor WHERE activo = ?', true),
-        await pool.query('SELECT * FROM cliente WHERE activo = ?', true),
-        await pool.query('SELECT * FROM proveedor WHERE activo = ?', true),
-        await pool.query('SELECT * FROM especialidad WHERE activo = ?', true),
-        await pool.query('SELECT * FROM actividad WHERE idEspecialidad = 1 and activo = ?', true),
-        await pool.query('SELECT t0.*, t1.idEspecialidad FROM ticket t0 INNER JOIN actividad t1 ON t1.idActividad = t0.idActividad WHERE t0.nroticket = ?', [id])
-    ]).then(values => {
-        const equipos = values[0];
-        const salas = values[1];
-        const supervisores = values[2];
-        const clientes = values[3];
-        const proveedores = values[4];
-        const especialidades = values[5];
-        const actividades = values[6];
+    var tickets = await pool.query('SELECT t0.*, t1.idEspecialidad FROM ticket t0 INNER JOIN actividad t1 ON t1.idActividad = t0.idActividad WHERE t0.nroticket = ?', [id])
+    const ticket = tickets[0];
 
-        var ticket = values[7][0];
-        var fechaHoraInicio = moment(ticket.fechaHoraInicio).format('YYYY-MM-DDTHH:mm');
-        var fechaHoraFin = moment(ticket.fechaHoraFin).format('YYYY-MM-DDTHH:mm');
-        ticket.fechaHoraInicio = fechaHoraInicio;
-        ticket.fechaHoraFin = fechaHoraFin;
+    if (ticket) {
+        Promise.all([
+            await pool.query('SELECT * FROM equipo WHERE activo = ?', true),
+            await pool.query('SELECT * FROM sala WHERE activo = ?', true),
+            await pool.query('SELECT * FROM supervisor WHERE activo = ?', true),
+            await pool.query('SELECT * FROM cliente WHERE activo = ?', true),
+            await pool.query('SELECT * FROM proveedor WHERE activo = ?', true),
+            await pool.query('SELECT * FROM especialidad WHERE activo = ?', true),
+            await pool.query('SELECT * FROM actividad WHERE idEspecialidad = ' + ticket.idEspecialidad + ' and activo = ?', true),
+        ]).then(values => {
+            const equipos = values[0];
+            const salas = values[1];
+            const supervisores = values[2];
+            const clientes = values[3];
+            const proveedores = values[4];
+            const especialidades = values[5];
+            const actividades = values[6];
 
-        res.render('tickets/edit', { ticket, equipos, salas, supervisores, clientes, proveedores, especialidades, actividades });
-    });
+            var fechaHoraInicio = moment(ticket.fechaHoraInicio).format('YYYY-MM-DDTHH:mm');
+            var fechaHoraFin = moment(ticket.fechaHoraFin).format('YYYY-MM-DDTHH:mm');
+            ticket.fechaHoraInicio = fechaHoraInicio;
+            ticket.fechaHoraFin = fechaHoraFin;
+
+            res.render('tickets/edit', { ticket, equipos, salas, supervisores, clientes, proveedores, especialidades, actividades });
+        });
+    } else {
+        res.redirect('/tickets');
+    }
 });
 
 router.post('/edit/:id', isLoggedIn, async (req, res) => {
