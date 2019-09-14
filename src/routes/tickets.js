@@ -89,7 +89,7 @@ router.get('/:page?', isLoggedIn, async (req, res) => {
     var page = req.query.page || 1;
     var totalRows = result[0].count;
     var pageCount = Math.ceil(totalRows / pageSize);
-    var limit = pageCount > pageSize ? pageSize : pageCount;
+    var limit = pageCount > pageSize ? pageCount : pageSize;
 
     const consulta = await pool.query('CALL ListarTareas(' + pageSize + ',' + page + ')');
     let tickets = consulta[0];

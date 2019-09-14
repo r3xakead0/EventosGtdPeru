@@ -2,9 +2,9 @@ USE eventosGtdPeru;
 
 DROP PROCEDURE IF EXISTS ListarTareas;
 
-DELIMITER |
+DELIMITER //
 
-CREATE  PROCEDURE ListarTareas(PROCEDURE `ListarTareas`(
+CREATE  PROCEDURE ListarTareas(
 	IN limitNumber INT,
     IN pageNumber INT
 )
@@ -32,7 +32,7 @@ BEGIN
 	supervisor, descripcionTrabajo, cliente, proveedor, personal
 	order by t0.fechaHoraCreacion desc
 	LIMIT limitNumber OFFSET offsetNumber;
-END
+END //
 
 DELIMITER ;
 
